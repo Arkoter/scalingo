@@ -34,7 +34,7 @@ func main() {
 
 	http.HandleFunc("GET /hello/{name}", func(w http.ResponseWriter, r *http.Request) {
 		name := r.PathValue("name")
-		w.Write([]byte("Bonjour " + name + " ! (Ceci est une route dynamique)"))
+		w.Write([]byte("Bonjour " + name))
 	})
 
 	http.HandleFunc("POST /submit", func(w http.ResponseWriter, r *http.Request) {
