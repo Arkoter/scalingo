@@ -2,9 +2,34 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Hello</title>
+    <title>Mon App Scalingo</title>
 </head>
 <body>
-<h1>Hello World</h1>
+<h1>Bienvenue sur mon App Go</h1>
+
+<div style="background-color: #f0f0f0; padding: 10px; border: 1px solid #ccc;">
+    <h3>Variable d'environnement Scalingo :</h3>
+    <p style="color: blue; font-weight: bold;">{{ .EnvMessage }}</p>
+</div>
+
+<hr>
+
+<h3>Test du Formulaire (POST)</h3>
+<form action="/submit" method="POST">
+    <label>Entrez quelque chose : </label>
+    <input type="text" name="mon_champ" placeholder="Votre texte ici">
+    <button type="submit">Envoyer au serveur</button>
+</form>
+
+{{ if .FormResult }}
+<p style="color: green; font-size: 1.2em;">
+    ✅ {{ .FormResult }}
+</p>
+{{ end }}
+
+<hr>
+
+<p>Testez la route dynamique en allant sur : <a href="/hello/Toto">/hello/Toto</a></p>
+
 </body>
 </html>
