@@ -59,7 +59,7 @@ func main() {
 	}
 
 	fs := http.FileServer(http.Dir("static"))
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	http.Handle("GET /static/", http.StripPrefix("/static/", fs))
 
 	tmpl := template.Must(template.ParseFiles("static/index.html"))
 
