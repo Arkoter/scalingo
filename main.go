@@ -21,6 +21,7 @@ type Message struct {
 
 type PageData struct {
 	DBMessages []Message
+	EditID     int
 }
 
 var db *sql.DB
@@ -61,8 +62,12 @@ func main() {
 
 	http.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		savedMessages := getMessagesFromDB()
+
+		editID, _ := strconv.Atoi(r.URL.Query().Get("edit_id"))
+
 		data := PageData{
 			DBMessages: savedMessages,
+			EditID:     editID,
 		}
 		_ = tmpl.Execute(w, data)
 	})
@@ -85,6 +90,19 @@ func main() {
 
 		if db != nil && err == nil {
 			_, _ = db.Exec("DELETE FROM messages WHERE id = ?", id)
+		}
+
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	})
+
+	http.HandleFunc("POST /update", func(w http.ResponseWriter, r *http.Request) {
+		_ = r.ParseForm()
+		idStr := r.FormValue("id")
+		content := r.FormValue("content")
+		id, err := strconv.Atoi(idStr)
+
+		if db != nil && err == nil && content != "" {
+			_, _ = db.Exec("UPDATE messages SET content = ? WHERE id = ?", content, id)
 		}
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
