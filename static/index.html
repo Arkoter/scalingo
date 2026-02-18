@@ -2,41 +2,47 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Scalingo</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ma ToDo List</title>
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<form action="/submit" method="POST">
-    <input type="text" name="mon_champ" placeholder="Nouveau message..." required>
-    <button type="submit">Ajouter</button>
-</form>
+<div class="container">
+    <h1>Mes Tâches</h1>
 
-<hr>
+    <form action="/submit" method="POST" class="add-form">
+        <input type="text" name="mon_champ" placeholder="Ajouter une tâche..." required autocomplete="off">
+        <button type="submit" class="btn-add">Ajouter</button>
+    </form>
 
-<ul>
-    {{ range .DBMessages }}
-    <li style="margin-bottom: 5px;">
-        {{ if eq $.EditID .ID }}
-        <form action="/update" method="POST" style="display:inline;">
-            <input type="hidden" name="id" value="{{ .ID }}">
-            <input type="text" name="content" value="{{ .Content }}" required>
-            <button type="submit">Valider</button>
-            <a href="/">Annuler</a>
-        </form>
+    <ul>
+        {{ range .DBMessages }}
+        <li>
+            {{ if eq $.EditID .ID }}
+            <form action="/update" method="POST" class="edit-form">
+                <input type="hidden" name="id" value="{{ .ID }}">
+                <input type="text" name="content" value="{{ .Content }}" required>
+                <button type="submit" class="btn-save">OK</button>
+                <a href="/" class="btn-cancel">Annuler</a>
+            </form>
+            {{ else }}
+            <span>{{ .Content }}</span>
+            <div class="actions">
+                <a href="/?edit_id={{ .ID }}" class="btn-edit" title="Modifier">✏️</a>
+
+                <form action="/delete" method="POST" style="display:inline;">
+                    <input type="hidden" name="id" value="{{ .ID }}">
+                    <button type="submit" class="btn-delete" title="Supprimer">✕</button>
+                </form>
+            </div>
+            {{ end }}
+        </li>
         {{ else }}
-        {{ .Content }}
-        <a href="/?edit_id={{ .ID }}" style="margin-left:10px; text-decoration:none;">✏️</a>
-
-        <form action="/delete" method="POST" style="display:inline;">
-            <input type="hidden" name="id" value="{{ .ID }}">
-            <button type="submit" style="color:red; margin-left:5px;">X</button>
-        </form>
+        <li style="color: #999; justify-content: center;">Aucune tâche pour le moment.</li>
         {{ end }}
-    </li>
-    {{ else }}
-    <li><i>Aucun message.</i></li>
-    {{ end }}
-</ul>
+    </ul>
+</div>
 
 </body>
 </html>

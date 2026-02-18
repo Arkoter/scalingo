@@ -58,11 +58,13 @@ func main() {
 		}
 	}
 
+	fs := http.FileServer(http.Dir("static"))
+	http.Handle("/static/", http.StripPrefix("/static/", fs))
+
 	tmpl := template.Must(template.ParseFiles("static/index.html"))
 
 	http.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
 		savedMessages := getMessagesFromDB()
-
 		editID, _ := strconv.Atoi(r.URL.Query().Get("edit_id"))
 
 		data := PageData{
