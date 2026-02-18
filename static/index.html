@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>ToDo List Simple</title>
+    <title>Scalingo</title>
 </head>
 <body>
 
@@ -15,7 +15,13 @@
 
 <ul>
     {{ range .DBMessages }}
-    <li>{{ . }}</li>
+    <li style="margin-bottom: 5px;">
+        {{ .Content }}
+        <form action="/delete" method="POST" style="display:inline;">
+            <input type="hidden" name="id" value="{{ .ID }}">
+            <button type="submit" style="color:red; margin-left:10px;">X</button>
+        </form>
+    </li>
     {{ else }}
     <li><i>Aucun message.</i></li>
     {{ end }}

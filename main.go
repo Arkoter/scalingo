@@ -8,13 +8,19 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
 
 	_ "github.com/go-sql-driver/mysql"
 )
 
+type Message struct {
+	ID      int
+	Content string
+}
+
 type PageData struct {
-	DBMessages []string
+	DBMessages []Message
 }
 
 var db *sql.DB
@@ -69,33 +75,41 @@ func main() {
 			_, _ = db.Exec("INSERT INTO messages (content) VALUES (?)", nomUtilisateur)
 		}
 
-		savedMessages := getMessagesFromDB()
-		data := PageData{
-			DBMessages: savedMessages,
+		http.Redirect(w, r, "/", http.StatusSeeOther)
+	})
+
+	http.HandleFunc("POST /delete", func(w http.ResponseWriter, r *http.Request) {
+		_ = r.ParseForm()
+		idStr := r.FormValue("id")
+		id, err := strconv.Atoi(idStr)
+
+		if db != nil && err == nil {
+			_, _ = db.Exec("DELETE FROM messages WHERE id = ?", id)
 		}
-		_ = tmpl.Execute(w, data)
+
+		http.Redirect(w, r, "/", http.StatusSeeOther)
 	})
 
 	log.Printf("Serveur lancé sur le port %s", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
-func getMessagesFromDB() []string {
-	var list []string
+func getMessagesFromDB() []Message {
+	var list []Message
 	if db == nil {
 		return list
 	}
 
-	rows, err := db.Query("SELECT content FROM messages ORDER BY id DESC")
+	rows, err := db.Query("SELECT id, content FROM messages ORDER BY id DESC")
 	if err != nil {
 		return list
 	}
 	defer rows.Close()
 
 	for rows.Next() {
-		var content string
-		if err := rows.Scan(&content); err == nil {
-			list = append(list, content)
+		var m Message
+		if err := rows.Scan(&m.ID, &m.Content); err == nil {
+			list = append(list, m)
 		}
 	}
 	return list
