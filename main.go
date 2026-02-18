@@ -10,7 +10,7 @@ import (
 	"os"
 	"strings"
 
-	_ "github.com/go-sql-driver/mysql" // Important : le driver MySQL
+	_ "github.com/go-sql-driver/mysql"
 )
 
 type PageData struct {
@@ -27,26 +27,21 @@ func main() {
 		port = "8080"
 	}
 
-	var err error
 	dbURL := os.Getenv("SCALINGO_MYSQL_URL")
-	if dbURL == "" {
-		log.Println("⚠️  Attention : SCALINGO_MYSQL_URL n'est pas défini.")
-	} else {
+	if dbURL != "" {
 		dsn, err := parseURLtoDSN(dbURL)
 		if err != nil {
-			log.Fatalf("Erreur parsing URL: %v", err)
+			log.Fatal(err)
 		}
 
 		db, err = sql.Open("mysql", dsn)
 		if err != nil {
-			log.Fatalf("Erreur ouverture DB: %v", err)
+			log.Fatal(err)
 		}
-		defer db.Close()
 
 		if err := db.Ping(); err != nil {
-			log.Fatalf("Impossible de se connecter à MySQL: %v", err)
+			log.Fatal(err)
 		}
-		log.Println("✅ Connecté à MySQL avec succès !")
 
 		_, err = db.Exec(`CREATE TABLE IF NOT EXISTS messages (
 			id INT AUTO_INCREMENT PRIMARY KEY,
@@ -54,7 +49,7 @@ func main() {
 			created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 		)`)
 		if err != nil {
-			log.Fatalf("Erreur création table: %v", err)
+			log.Fatal(err)
 		}
 	}
 
@@ -72,7 +67,7 @@ func main() {
 			EnvMessage: message,
 			DBMessages: savedMessages,
 		}
-		tmpl.Execute(w, data)
+		_ = tmpl.Execute(w, data)
 	})
 
 	http.HandleFunc("GET /hello/{name}", func(w http.ResponseWriter, r *http.Request) {
@@ -81,15 +76,13 @@ func main() {
 	})
 
 	http.HandleFunc("POST /submit", func(w http.ResponseWriter, r *http.Request) {
-		r.ParseForm()
+		_ = r.ParseForm()
 		nomUtilisateur := r.FormValue("mon_champ")
-
 		statusMsg := "Reçu mais non sauvegardé (Pas de DB)"
 
 		if db != nil && nomUtilisateur != "" {
 			_, err := db.Exec("INSERT INTO messages (content) VALUES (?)", nomUtilisateur)
 			if err != nil {
-				log.Printf("Erreur insert: %v", err)
 				statusMsg = "Erreur lors de la sauvegarde."
 			} else {
 				statusMsg = "Sauvegardé en base de données : " + nomUtilisateur
@@ -103,7 +96,7 @@ func main() {
 			FormResult: statusMsg,
 			DBMessages: savedMessages,
 		}
-		tmpl.Execute(w, data)
+		_ = tmpl.Execute(w, data)
 	})
 
 	log.Printf("Serveur lancé sur le port %s", port)
@@ -118,7 +111,6 @@ func getMessagesFromDB() []string {
 
 	rows, err := db.Query("SELECT content FROM messages ORDER BY id DESC LIMIT 5")
 	if err != nil {
-		log.Printf("Erreur lecture: %v", err)
 		return list
 	}
 	defer rows.Close()
