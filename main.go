@@ -14,8 +14,6 @@ import (
 )
 
 type PageData struct {
-	EnvMessage string
-	FormResult string
 	DBMessages []string
 }
 
@@ -56,44 +54,23 @@ func main() {
 	tmpl := template.Must(template.ParseFiles("static/index.html"))
 
 	http.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		message := os.Getenv("MESSAGE_ACCUEIL")
-		if message == "" {
-			message = "Aucune variable 'MESSAGE_ACCUEIL' détectée."
-		}
-
 		savedMessages := getMessagesFromDB()
-
 		data := PageData{
-			EnvMessage: message,
 			DBMessages: savedMessages,
 		}
 		_ = tmpl.Execute(w, data)
 	})
 
-	http.HandleFunc("GET /hello/{name}", func(w http.ResponseWriter, r *http.Request) {
-		name := r.PathValue("name")
-		w.Write([]byte("Bonjour " + name))
-	})
-
 	http.HandleFunc("POST /submit", func(w http.ResponseWriter, r *http.Request) {
 		_ = r.ParseForm()
 		nomUtilisateur := r.FormValue("mon_champ")
-		statusMsg := "Reçu mais non sauvegardé (Pas de DB)"
 
 		if db != nil && nomUtilisateur != "" {
-			_, err := db.Exec("INSERT INTO messages (content) VALUES (?)", nomUtilisateur)
-			if err != nil {
-				statusMsg = "Erreur lors de la sauvegarde."
-			} else {
-				statusMsg = "Sauvegardé en base de données : " + nomUtilisateur
-			}
+			_, _ = db.Exec("INSERT INTO messages (content) VALUES (?)", nomUtilisateur)
 		}
 
 		savedMessages := getMessagesFromDB()
-
 		data := PageData{
-			EnvMessage: os.Getenv("MESSAGE_ACCUEIL"),
-			FormResult: statusMsg,
 			DBMessages: savedMessages,
 		}
 		_ = tmpl.Execute(w, data)
@@ -109,7 +86,7 @@ func getMessagesFromDB() []string {
 		return list
 	}
 
-	rows, err := db.Query("SELECT content FROM messages ORDER BY id DESC LIMIT 5")
+	rows, err := db.Query("SELECT content FROM messages ORDER BY id DESC")
 	if err != nil {
 		return list
 	}

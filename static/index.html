@@ -2,47 +2,24 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Mon App Scalingo MySQL</title>
+    <title>ToDo List Simple</title>
 </head>
 <body>
-<h1>Bienvenue sur mon App Go + MySQL</h1>
-
-<div style="background-color: #f0f0f0; padding: 10px; border: 1px solid #ccc;">
-    <h3>Variable d'environnement Scalingo :</h3>
-    <p style="color: blue; font-weight: bold;">{{ .EnvMessage }}</p>
-</div>
-
-<hr>
-
-<h3>Test Interaction Base de Données</h3>
-<p>Tout ce que vous écrivez ici sera stocké dans votre addon MySQL.</p>
 
 <form action="/submit" method="POST">
-    <label>Message à stocker : </label>
-    <input type="text" name="mon_champ" placeholder="Hello MySQL" required>
-    <button type="submit">Enregistrer en DB</button>
+    <input type="text" name="mon_champ" placeholder="Nouveau message..." required>
+    <button type="submit">Ajouter</button>
 </form>
-
-{{ if .FormResult }}
-<p style="color: green; font-size: 1.2em;">
-    ✅ {{ .FormResult }}
-</p>
-{{ end }}
 
 <hr>
 
-<h3>Derniers messages en Base de Données :</h3>
 <ul>
     {{ range .DBMessages }}
     <li>{{ . }}</li>
     {{ else }}
-    <li><i>Aucun message dans la base (ou base non connectée).</i></li>
+    <li><i>Aucun message.</i></li>
     {{ end }}
 </ul>
-
-<hr>
-
-<p>Testez la route dynamique : <a href="/hello/Test">/hello/Test</a></p>
 
 </body>
 </html>
