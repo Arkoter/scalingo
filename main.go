@@ -79,7 +79,12 @@ func main() {
 		nomUtilisateur := r.FormValue("mon_champ")
 
 		if db != nil && nomUtilisateur != "" {
-			_, _ = db.Exec("INSERT INTO messages (content) VALUES (?)", nomUtilisateur)
+			_, err := db.Exec("INSERT INTO messages (content) VALUES (?)", nomUtilisateur)
+			if err != nil {
+				log.Printf("ERREUR : Impossible d'ajouter la tâche '%s' -> %v\n", nomUtilisateur, err)
+			} else {
+				log.Printf("SUCCES : Tâche ajoutée -> '%s'\n", nomUtilisateur)
+			}
 		}
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -91,7 +96,12 @@ func main() {
 		id, err := strconv.Atoi(idStr)
 
 		if db != nil && err == nil {
-			_, _ = db.Exec("DELETE FROM messages WHERE id = ?", id)
+			_, errExec := db.Exec("DELETE FROM messages WHERE id = ?", id)
+			if errExec != nil {
+				log.Printf("ERREUR : Impossible de supprimer la tâche (ID: %d) -> %v\n", id, errExec)
+			} else {
+				log.Printf("SUCCES : Tâche supprimée (ID: %d)\n", id)
+			}
 		}
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -104,7 +114,12 @@ func main() {
 		id, err := strconv.Atoi(idStr)
 
 		if db != nil && err == nil && content != "" {
-			_, _ = db.Exec("UPDATE messages SET content = ? WHERE id = ?", content, id)
+			_, errExec := db.Exec("UPDATE messages SET content = ? WHERE id = ?", content, id)
+			if errExec != nil {
+				log.Printf("ERREUR : Impossible de modifier la tâche (ID: %d) -> %v\n", id, errExec)
+			} else {
+				log.Printf("SUCCES : Tâche modifiée (ID: %d) -> Nouveau contenu : '%s'\n", id, content)
+			}
 		}
 
 		http.Redirect(w, r, "/", http.StatusSeeOther)
@@ -122,6 +137,7 @@ func getMessagesFromDB() []Message {
 
 	rows, err := db.Query("SELECT id, content FROM messages ORDER BY id DESC")
 	if err != nil {
+		log.Printf("ERREUR : Impossible de récupérer les tâches depuis la base de données -> %v\n", err)
 		return list
 	}
 	defer rows.Close()
@@ -130,6 +146,8 @@ func getMessagesFromDB() []Message {
 		var m Message
 		if err := rows.Scan(&m.ID, &m.Content); err == nil {
 			list = append(list, m)
+		} else {
+			log.Printf("AVERTISSEMENT : Erreur lors de la lecture d'une ligne -> %v\n", err)
 		}
 	}
 	return list
