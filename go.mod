@@ -1,4 +1,4 @@
-module yboost
+module scalingo
 
 go 1.25.0
 
